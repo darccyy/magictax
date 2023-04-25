@@ -18,6 +18,20 @@ impl eframe::App for App {
             frame.close();
         }
 
+        /// Focus this element, if it is new to the ui
+        /// 
+        /// For elements such as the default button in a dialog
+        macro_rules! focus_if_new {
+            ( $($tt:tt)* ) => {{
+                let element = $($tt)*;
+                if self.focus_new_element_on_next_frame {
+                    element.request_focus();
+                    self.focus_new_element_on_next_frame = false;
+                }
+                element
+            }};
+        }
+
         // * Handle concurrent messages
 
         if let Ok(msg) = self.channel.receiver.try_recv() {
@@ -39,7 +53,7 @@ impl eframe::App for App {
         let concurrently_writing = *self.writing.lock().unwrap();
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Encrypted text editor");
+            ui.heading("Encrypted CSV editor");
 
             // * Top bar
 
@@ -119,17 +133,33 @@ impl eframe::App for App {
             // * Rows
 
             Grid::new("rows").num_columns(3).striped(true).show(ui, |ui|{
+                let mut focus_row_this_frame = self.focus_row_on_next_frame;
+                self.focus_row_on_next_frame = None;
+
                 for i in 0..self.file.contents().rows.len() {
-                    /// Returns `true` if index is still in bounds
-                    macro_rules! this_row_still_exists {
+                    /// Returns `true` if given index is still in bounds
+                    macro_rules! row_exists {
+                        // Current row
                         () => {
                             i < self.file.contents().rows.len()
                         };
+                        
+                        // Offset from current row
+                        ( $offset: expr ) => {{
+                            // Add offset to current index
+                            //      (convert to signed integer to prevent unsigned underflow)
+                            let index = i as isize + $offset;
+
+                            // Check index is not negative
+                            index >= 0
+                            // Check index is not not out of bounds
+                            && index < self.file.contents().rows.len() as isize
+                        }};
                     }
 
                     // Break loop if index out of bounds
                     // Needed due to `.remove()` call inside loop
-                    if !this_row_still_exists!() {
+                    if !row_exists!() {
                         break;
                     }
 
@@ -145,12 +175,64 @@ impl eframe::App for App {
                         };
                     }
 
+                    /// Create keybinds for focusing element, and creating row below, and navigating up and down rows
+                    macro_rules! handle_focus {
+                        ( $element: expr, $ui: ident, $is_label: expr ) => {
+                            // Focus element if requested from previous frame
+                            if focus_row_this_frame == Some((i, $is_label)) {
+                                focus_row_this_frame = None;
+                                $element.request_focus();
+                            }
+
+                            // Add row below
+                            if $element.lost_focus() && keys!($ui: Enter) {
+                                // Insert row after focused one
+                                self.file.contents_mut().rows.insert(i + 1, CsvRow::default());
+                                self.file.mark_as_unsaved();
+                                // Focus that row on next frame
+                                self.focus_row_on_next_frame = Some((i + 1, $is_label));
+                            }
+
+                            // Navigate up/down rows
+                            if $element.has_focus() {
+                                if keys!($ui: CTRL + ArrowUp) {
+                                    // Focus previous row on next frame, if exists
+                                    if row_exists!(-1) {
+                                        self.focus_row_on_next_frame = Some((i - 1, $is_label));
+                                    }
+                                } else if keys!($ui: CTRL + ArrowDown) {
+                                    // Focus next row on next frame, if exists
+                                    if row_exists!(1) {
+                                        self.focus_row_on_next_frame = Some((i + 1, $is_label));
+                                    }
+                                } else if keys!($ui: CTRL + ArrowLeft) {
+                                    // Focus value (label is currently focused)
+                                    if $is_label {
+                                        self.focus_row_on_next_frame = Some((i, false));
+                                    }
+                                } else if keys!($ui: CTRL + ArrowRight) {
+                                    // Focus label (value is currently focused)
+                                    if !$is_label {
+                                        self.focus_row_on_next_frame = Some((i, true));
+                                    }
+                                } else if keys!($ui: CTRL + Delete) {
+                                    // Delete element
+                                    self.file.contents_mut().rows.remove(i);
+                                    // Focus element above (now offset 0), if none below
+                                    if !row_exists!() && row_exists!(-1) {
+                                        self.focus_row_on_next_frame = Some((i - 1, $is_label));
+                                    }
+                                }
+                            }
+                        };
+                    }
+
                     // Editable value
                     ui.horizontal(|ui|{
                         let value = &mut this_row!().value;
 
                         // Number value
-                        let value_element = ui.add(
+                        let element = ui.add(
                             egui::DragValue::new(value)
                                 .prefix("$")
                                 .max_decimals(2)
@@ -158,8 +240,10 @@ impl eframe::App for App {
                                 .speed(0.01),
                         );
 
+                        handle_focus!(element, ui, false);
+
                         // Mark as unsaved if label or number was changed
-                        if value_element.changed() {
+                        if element.changed() {
                             self.file.mark_as_unsaved();
                         }
                     });
@@ -168,10 +252,12 @@ impl eframe::App for App {
                     ui.horizontal(|ui|{
                         let label = &mut this_row!().label;
 
-                        let label_element = ui.text_edit_singleline(label);
+                        let element = ui.text_edit_singleline(label);
+
+                        handle_focus!(element, ui, true);
 
                         // Mark as unsaved if label or number was changed
-                        if label_element.changed() {
+                        if element.changed() {
                             self.file.mark_as_unsaved();
                         }
 
@@ -179,7 +265,7 @@ impl eframe::App for App {
                     });
 
                     // Action buttons
-                    if this_row_still_exists!() {
+                    if row_exists!() {
                         ui.horizontal(|ui| {
                             // New entry after this one
                             if ui.button("+").clicked() {
@@ -193,18 +279,6 @@ impl eframe::App for App {
                                 self.file.mark_as_unsaved();
                             }
                         });
-                    }
-
-                    // Keybinds
-
-                    // Add new row
-                    if keys!(ui: Enter) {
-                        if this_row_still_exists!() {
-                            self.file.contents_mut().rows.insert(i + 1, CsvRow::default());
-                        } else {
-                            self.file.contents_mut().rows.push(CsvRow::default());
-                        }
-                        self.file.mark_as_unsaved();
                     }
 
                     // Next row of grid
@@ -249,8 +323,8 @@ impl eframe::App for App {
                             self.reset_close_action();
                         }
 
-                        // Save file and close
-                        if ui.button("Save").clicked() {
+                        // Save file and close (default button)
+                        if focus_if_new!(ui.button("Save")).clicked() {
                             // Save (concurrently)
                             // This will show 'wait for file to save' until save completes
                             self.file_save_or_save_as(ctx);
@@ -267,10 +341,10 @@ impl eframe::App for App {
         if let Some(error_msg) = self.get_error_message() {
             dialog_window("Error").show(ctx, |ui| {
                 ui.heading("An error occurred!");
-
                 ui.label(error_msg);
 
-                if ui.button("Ok").clicked() {
+                // Dismiss error
+                if focus_if_new!(ui.button("Dismiss")).clicked() {
                     self.clear_error_message();
                 }
             });
@@ -280,9 +354,17 @@ impl eframe::App for App {
     // Program was closed
     // ALT+F4, Close button, ect.
     fn on_close_event(&mut self) -> bool {
+        // If already attempting to close, but not allowed, then close dialog window instead,
+        //      returning to main window
+        if self.attempting_file_close.is_attempting() && !self.file_can_close() {
+            self.attempting_file_close.reset_attempt();
+            return false;
+        }
+
         // Set file close action to quit app
         self.attempting_file_close
             .set_action(CloseFileAction::CloseWindow);
+        self.focus_new_element_on_next_frame = true;
         // Returns true if file is allowed to close
         self.file_can_close()
     }

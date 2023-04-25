@@ -2,7 +2,7 @@
 
 use eframe::egui;
 
-use encrypted_text_editor::App;
+use sumtotal::App;
 
 // Start egui/eframe app
 fn main() -> Result<(), eframe::Error> {
@@ -15,7 +15,7 @@ fn main() -> Result<(), eframe::Error> {
     };
 
     eframe::run_native(
-        "Encrypted text editor",
+        "Encrypted CSV editor",
         options,
         Box::new(|_cc| Box::<App>::default()),
     )

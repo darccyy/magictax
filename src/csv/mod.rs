@@ -36,7 +36,16 @@ pub struct Csv {
 
 impl Default for Csv {
     fn default() -> Self {
-        Self { rows: Vec::new() }
+        Self {
+            //@ debug
+            rows: vec![
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+            ],
+        }
+        // Self { rows: Vec::new() }
     }
 }
 

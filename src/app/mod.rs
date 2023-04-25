@@ -35,29 +35,19 @@ pub struct App {
     /// Whether program window should be closed on next frame render
     close_window_on_next_frame: bool,
 
+    /// Row to focus on next frame
+    /// 
+    /// Index of row, and `true` to focus label, instead of value
+    /// 
+    /// `None` if no row needs to gain focus
+    focus_row_on_next_frame: Option<(usize, bool)>,
+
+    /// Whether to focus new element on next frame (such as dialog window button)
+    focus_new_element_on_next_frame: bool,
+
     /// Send messages between threads
     channel: Channel<ConcurrentMessage>,
 
     /// Display any error message
     error_message: Arc<Mutex<Option<String>>>,
 }
-
-// // @ debug
-// impl Default for App {
-//     fn default() -> Self {
-//         Self {
-//             // file: File::open_path_and_decrypt("/home/darcy/Documents/hello.enc", KEY).expect("Open initial file"),
-//             file:Default::default(),
-
-//             writing: Default::default(),
-
-//             attempting_file_close: Default::default(),
-
-//             close_window_on_next_frame: Default::default(),
-
-//             channel: Default::default(),
-
-//             error: Default::default(),
-//         }
-//     }
-// }

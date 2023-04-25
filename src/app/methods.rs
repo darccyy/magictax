@@ -135,7 +135,7 @@ impl App {
         if !self.file_can_close() {
             self.attempting_file_close
                 .set_action(CloseFileAction::OpenFile);
-            // self.attempting_file_close = Some(Action::OpenFile);
+            self.focus_new_element_on_next_frame = true;
             return;
         }
 
@@ -177,6 +177,7 @@ impl App {
         if !self.file_can_close() {
             self.attempting_file_close
                 .set_action(CloseFileAction::NewFile);
+            self.focus_new_element_on_next_frame = true;
             return;
         }
 

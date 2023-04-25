@@ -37,9 +37,13 @@ fn parse_should_fail() {
     let error = result.expect_err("Should be invalid due to no label");
     assert_eq!(error, ParseError::MissingValue);
 
-    let result: Result<CsvRow, _> = "no value,".try_into();
+    let result: Result<CsvRow, _> = "no value".try_into();
     let error = result.expect_err("Should be invalid due to no value");
     assert_eq!(error, ParseError::MissingValue);
+
+    let result: Result<CsvRow, _> = "value not a number,".try_into();
+    let error = result.expect_err("Should be invalid due to value not a number");
+    assert_eq!(error, ParseError::ValueNotNumber);
 
     let result: Result<CsvRow, _> = "value not a number,foo".try_into();
     let error = result.expect_err("Should be invalid due to value not a number");
