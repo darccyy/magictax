@@ -29,24 +29,9 @@ impl Error for ParseError {}
 /// Data parsed from CSV file
 ///
 ///todo: Rename
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct Csv {
     pub rows: Vec<CsvRow>,
-}
-
-impl Default for Csv {
-    fn default() -> Self {
-        Self {
-            //@ debug
-            rows: vec![
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-            ],
-        }
-        // Self { rows: Vec::new() }
-    }
 }
 
 impl TryFrom<&str> for Csv {

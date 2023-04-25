@@ -37,10 +37,10 @@ pub struct App {
 
     /// Row to focus on next frame
     /// 
-    /// Index of row, and `true` to focus label, instead of value
+    /// Index of row, and kind of element in row
     /// 
     /// `None` if no row needs to gain focus
-    focus_row_on_next_frame: Option<(usize, bool)>,
+    focus_row_on_next_frame: Option<(usize, RowElement)>,
 
     /// Whether to focus new element on next frame (such as dialog window button)
     focus_new_element_on_next_frame: bool,
@@ -50,4 +50,37 @@ pub struct App {
 
     /// Display any error message
     error_message: Arc<Mutex<Option<String>>>,
+}
+
+#[derive(Clone, Copy, PartialEq)]
+enum RowElement {
+    Value,
+    Label,
+    InsertButton,
+    RemoveButton,
+}
+
+impl RowElement {
+    
+    pub fn previous(&self) -> Self {
+        use RowElement::*;
+
+        match self{
+            Value => Value,
+            Label => Value,
+            InsertButton => Label,
+            RemoveButton => InsertButton,
+        }
+    }
+
+    pub fn next(&self) -> Self {
+        use RowElement::*;
+
+        match self{
+            Value => Label,
+            Label => InsertButton,
+            InsertButton => RemoveButton,
+            RemoveButton => RemoveButton,
+        }
+    }
 }

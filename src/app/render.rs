@@ -6,12 +6,15 @@ use eframe::{
 };
 use egui::Grid;
 
-use crate::csv::CsvRow;
+use crate::{csv::CsvRow, app::RowElement};
 
 use super::{App, CloseFileAction, ConcurrentMessage};
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        // Set scale to slightly more zoomed in
+        ctx.set_pixels_per_point(2.3);
+
         // Close window, if action was triggered in a previous frame
         //      (from a method that did not have `frame`)
         if self.close_window_on_next_frame {
@@ -130,6 +133,8 @@ impl eframe::App for App {
                 });
             });
 
+            ui.separator();
+
             // * Rows
 
             Grid::new("rows").num_columns(3).striped(true).show(ui, |ui|{
@@ -172,9 +177,9 @@ impl eframe::App for App {
 
                     /// Create keybinds for focusing element, and creating row below, and navigating up and down rows
                     macro_rules! handle_focus {
-                        ( $element: expr, $ui: ident, $is_label: expr ) => {
+                        ( $ui: ident : $element: expr, $kind: expr ) => {
                             // Focus element if requested from previous frame
-                            if focus_row_this_frame == Some((i, $is_label)) {
+                            if focus_row_this_frame == Some((i, $kind)) {
                                 focus_row_this_frame = None;
                                 $element.request_focus();
                             }
@@ -185,37 +190,33 @@ impl eframe::App for App {
                                 self.file.contents_mut().rows.insert(i + 1, CsvRow::default());
                                 self.file.mark_as_unsaved();
                                 // Focus that row on next frame
-                                self.focus_row_on_next_frame = Some((i + 1, $is_label));
+                                self.focus_row_on_next_frame = Some((i + 1, $kind));
                             }
 
                             // Navigate up/down rows
                             if $element.has_focus() {
-                                if keys!($ui: CTRL + ArrowUp) {
+                                if keys!($ui: ArrowUp) {
                                     // Focus previous row on next frame, if exists
                                     if row_exists!(-1) {
-                                        self.focus_row_on_next_frame = Some((i - 1, $is_label));
+                                        self.focus_row_on_next_frame = Some((i - 1, $kind));
                                     }
-                                } else if keys!($ui: CTRL + ArrowDown) {
+                                } else if keys!($ui: ArrowDown) {
                                     // Focus next row on next frame, if exists
                                     if row_exists!(1) {
-                                        self.focus_row_on_next_frame = Some((i + 1, $is_label));
+                                        self.focus_row_on_next_frame = Some((i + 1, $kind));
                                     }
-                                } else if keys!($ui: CTRL + ArrowLeft) {
-                                    // Focus value (label is currently focused)
-                                    if $is_label {
-                                        self.focus_row_on_next_frame = Some((i, false));
-                                    }
-                                } else if keys!($ui: CTRL + ArrowRight) {
-                                    // Focus label (value is currently focused)
-                                    if !$is_label {
-                                        self.focus_row_on_next_frame = Some((i, true));
-                                    }
-                                } else if keys!($ui: CTRL + Delete) {
+                                } else if keys!($ui: ArrowLeft) {
+                                    // Focus previous element (left)
+                                    self.focus_row_on_next_frame = Some((i, $kind.previous()));
+                                } else if keys!($ui: ArrowRight) {
+                                    // Focus next element (right)
+                                    self.focus_row_on_next_frame = Some((i, $kind.next()));
+                                } else if keys!($ui: Delete) {
                                     // Delete element
                                     self.file.contents_mut().rows.remove(i);
                                     // Focus element above (now offset 0), if none below
                                     if !row_exists!(0) && row_exists!(-1) {
-                                        self.focus_row_on_next_frame = Some((i - 1, $is_label));
+                                        self.focus_row_on_next_frame = Some((i - 1, $kind));
                                     }
                                 }
                             }
@@ -227,18 +228,17 @@ impl eframe::App for App {
                         let value = &mut this_row!().value;
 
                         // Number value
-                        let element = ui.add(
+                        let value_element = ui.add(
                             egui::DragValue::new(value)
                                 .prefix("$")
                                 .max_decimals(2)
                                 .clamp_range(0.0..=INFINITY)
                                 .speed(0.01),
                         );
-
-                        handle_focus!(element, ui, false);
+                        handle_focus!(ui: value_element, RowElement::Value);
 
                         // Mark as unsaved if label or number was changed
-                        if element.changed() {
+                        if value_element.changed() {
                             self.file.mark_as_unsaved();
                         }
                     });
@@ -247,12 +247,11 @@ impl eframe::App for App {
                     ui.horizontal(|ui|{
                         let label = &mut this_row!().label;
 
-                        let element = ui.text_edit_singleline(label);
-
-                        handle_focus!(element, ui, true);
+                        let label_element = ui.text_edit_singleline(label);
+                        handle_focus!(ui: label_element, RowElement::Label);
 
                         // Mark as unsaved if label or number was changed
-                        if element.changed() {
+                        if label_element.changed() {
                             self.file.mark_as_unsaved();
                         }
 
@@ -263,13 +262,17 @@ impl eframe::App for App {
                     if row_exists!(0) {
                         ui.horizontal(|ui| {
                             // New entry after this one
-                            if ui.button("+").clicked() {
+                            let insert_button = ui.button("+");
+                            handle_focus!(ui: insert_button, RowElement::InsertButton);
+                            if insert_button.clicked() {
                                 self.file.contents_mut().rows.insert(i + 1, CsvRow::default());
                                 self.file.mark_as_unsaved();
                             }
 
                             // Remove this entry
-                            if ui.button("-").clicked() {
+                            let remove_button = ui.button("-");
+                            handle_focus!(ui: remove_button, RowElement::RemoveButton);
+                            if remove_button.clicked() {
                                 self.file.contents_mut().rows.remove(i);
                                 self.file.mark_as_unsaved();
                             }
@@ -313,13 +316,13 @@ impl eframe::App for App {
 
                         // Cancel attempt, returning to current file
                         // Button and keybind
-                        if ui.button("Cancel").clicked() || keys!(ui: Escape) {
+                        if focus_if_new!(ui.button("Cancel")).clicked() || keys!(ui: Escape) {
                             // Stop attempting close file
                             self.reset_close_action();
                         }
 
                         // Save file and close (default button)
-                        if focus_if_new!(ui.button("Save")).clicked() {
+                        if ui.button("Save").clicked() {
                             // Save (concurrently)
                             // This will show 'wait for file to save' until save completes
                             self.file_save_or_save_as(ctx);
