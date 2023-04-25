@@ -10,6 +10,8 @@ mod channel;
 /// Handle file input/output and save state
 mod file;
 
+mod csv;
+
 use std::path::PathBuf;
 
 pub use crate::app::App;
