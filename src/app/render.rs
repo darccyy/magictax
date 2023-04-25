@@ -137,13 +137,8 @@ impl eframe::App for App {
                 self.focus_row_on_next_frame = None;
 
                 for i in 0..self.file.contents().rows.len() {
-                    /// Returns `true` if given index is still in bounds
+                    /// Returns `true` if given index (offset from curren index) is still in bounds
                     macro_rules! row_exists {
-                        // Current row
-                        () => {
-                            i < self.file.contents().rows.len()
-                        };
-                        
                         // Offset from current row
                         ( $offset: expr ) => {{
                             // Add offset to current index
@@ -159,7 +154,7 @@ impl eframe::App for App {
 
                     // Break loop if index out of bounds
                     // Needed due to `.remove()` call inside loop
-                    if !row_exists!() {
+                    if !row_exists!(0) {
                         break;
                     }
 
@@ -219,7 +214,7 @@ impl eframe::App for App {
                                     // Delete element
                                     self.file.contents_mut().rows.remove(i);
                                     // Focus element above (now offset 0), if none below
-                                    if !row_exists!() && row_exists!(-1) {
+                                    if !row_exists!(0) && row_exists!(-1) {
                                         self.focus_row_on_next_frame = Some((i - 1, $is_label));
                                     }
                                 }
@@ -265,7 +260,7 @@ impl eframe::App for App {
                     });
 
                     // Action buttons
-                    if row_exists!() {
+                    if row_exists!(0) {
                         ui.horizontal(|ui| {
                             // New entry after this one
                             if ui.button("+").clicked() {

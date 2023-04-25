@@ -154,7 +154,7 @@ impl File {
         // Write encrypted data to file
         cocoon
             .dump(bytes, &mut file)
-            .map_err(|error| FileError::Crypto(error))?;
+            .map_err(FileError::Crypto)?;
 
         self.saved = true;
         Ok(())
@@ -178,7 +178,7 @@ impl File {
         // Decrypt data (bytes) from file
         let bytes = cocoon
             .parse(&mut file)
-            .map_err(|error| FileError::Crypto(error))?;
+            .map_err( FileError::Crypto)?;
 
         // Convert bytes to string
         // This may fail, if bytes do not form a valid utf8 string
@@ -192,7 +192,7 @@ impl File {
         })?;
 
         // Parse contents from CSV format
-        let contents = Csv::decode(&contents).map_err(|error| FileError::CsvParse(error))?;
+        let contents = Csv::decode(&contents).map_err(FileError::CsvParse)?;
 
         Ok(Self {
             contents,

@@ -35,7 +35,7 @@ impl App {
         println!("Save or save as");
 
         // Clone path, not whole file object
-        let path_option = self.file.path().map(|path| path.clone());
+        let path_option = self.file.path().cloned();
 
         if let Some(path) = path_option {
             // File exists (registered)

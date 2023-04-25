@@ -70,7 +70,7 @@ impl Display for Csv {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in &self.rows {
             row.fmt(f)?;
-            write!(f, "\n")?;
+            writeln!(f)?;
         }
         Ok(())
     }
