@@ -71,6 +71,17 @@ impl Csv {
     pub fn decode(file: &str) -> Result<Self, ParseError> {
         file.try_into()
     }
+
+    /// Get total of all values added
+    pub fn sum(&self) -> f32 {
+        let sum: f32 = self.rows.iter().map(|row| row.value).sum();
+        (sum * 100.0).round() / 100.0
+    }
+
+    /// Get total of all values added
+    pub fn count(&self) -> usize {
+        self.rows.len()
+    }
 }
 
 /// Row parsed from CSV file

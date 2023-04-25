@@ -137,152 +137,164 @@ impl eframe::App for App {
 
             // * Rows
 
-            Grid::new("rows").num_columns(3).striped(true).show(ui, |ui|{
-                let mut focus_row_this_frame = self.focus_row_on_next_frame;
-                self.focus_row_on_next_frame = None;
+            if self.file.contents().rows.is_empty() {
+                ui.monospace("↑ Press [+] to add an entry");
+            } else {
+                Grid::new("rows").num_columns(3).striped(true).show(ui, |ui|{
+                    let mut focus_row_this_frame = self.focus_row_on_next_frame;
+                    self.focus_row_on_next_frame = None;
 
-                for i in 0..self.file.contents().rows.len() {
-                    /// Returns `true` if given index (offset from curren index) is still in bounds
-                    macro_rules! row_exists {
-                        // Offset from current row
-                        ( $offset: expr ) => {{
-                            // Add offset to current index
-                            //      (convert to signed integer to prevent unsigned underflow)
-                            let index = i as isize + $offset;
+                    for i in 0..self.file.contents().rows.len() {
+                        /// Returns `true` if given index (offset from curren index) is still in bounds
+                        macro_rules! row_exists {
+                            // Offset from current row
+                            ( $offset: expr ) => {{
+                                // Add offset to current index
+                                //      (convert to signed integer to prevent unsigned underflow)
+                                let index = i as isize + $offset;
 
-                            // Check index is not negative
-                            index >= 0
-                            // Check index is not not out of bounds
-                            && index < self.file.contents().rows.len() as isize
-                        }};
-                    }
+                                // Check index is not negative
+                                index >= 0
+                                // Check index is not not out of bounds
+                                && index < self.file.contents().rows.len() as isize
+                            }};
+                        }
 
-                    // Break loop if index out of bounds
-                    // Needed due to `.remove()` call inside loop
-                    if !row_exists!(0) {
-                        break;
-                    }
+                        // Break loop if index out of bounds
+                        // Needed due to `.remove()` call inside loop
+                        if !row_exists!(0) {
+                            break;
+                        }
 
-                    /// Get mutable reference to this row
-                    /// 
-                    /// Returns from current function if index out of bounds
-                    macro_rules! this_row {
-                        () => {
-                            match self.file.contents_mut().rows.get_mut(i) {
-                                Some(row) => row,
-                                None => return,
-                            }
-                        };
-                    }
+                        /// Get mutable reference to this row
+                        /// 
+                        /// Returns from current function if index out of bounds
+                        macro_rules! this_row {
+                            () => {
+                                match self.file.contents_mut().rows.get_mut(i) {
+                                    Some(row) => row,
+                                    None => return,
+                                }
+                            };
+                        }
 
-                    /// Create keybinds for focusing element, and creating row below, and navigating up and down rows
-                    macro_rules! handle_focus {
-                        ( $ui: ident : $element: expr, $kind: expr ) => {
-                            // Focus element if requested from previous frame
-                            if focus_row_this_frame == Some((i, $kind)) {
-                                focus_row_this_frame = None;
-                                $element.request_focus();
-                            }
+                        /// Create keybinds for focusing element, and creating row below, and navigating up and down rows
+                        macro_rules! handle_focus {
+                            ( $ui: ident : $element: expr, $kind: expr ) => {
+                                // Focus element if requested from previous frame
+                                if focus_row_this_frame == Some((i, $kind)) {
+                                    focus_row_this_frame = None;
+                                    $element.request_focus();
+                                }
 
-                            // Add row below
-                            if $element.lost_focus() && keys!($ui: Enter) {
-                                // Insert row after focused one
-                                self.file.contents_mut().rows.insert(i + 1, CsvRow::default());
-                                self.file.mark_as_unsaved();
-                                // Focus that row on next frame
-                                self.focus_row_on_next_frame = Some((i + 1, $kind));
-                            }
+                                // Add row below
+                                if $element.lost_focus() && keys!($ui: Enter) {
+                                    // Insert row after focused one
+                                    self.file.contents_mut().rows.insert(i + 1, CsvRow::default());
+                                    self.file.mark_as_unsaved();
+                                    // Focus that row on next frame
+                                    self.focus_row_on_next_frame = Some((i + 1, $kind));
+                                }
 
-                            // Navigate up/down rows
-                            if $element.has_focus() {
-                                if keys!($ui: ArrowUp) {
-                                    // Focus previous row on next frame, if exists
-                                    if row_exists!(-1) {
-                                        self.focus_row_on_next_frame = Some((i - 1, $kind));
-                                    }
-                                } else if keys!($ui: ArrowDown) {
-                                    // Focus next row on next frame, if exists
-                                    if row_exists!(1) {
-                                        self.focus_row_on_next_frame = Some((i + 1, $kind));
-                                    }
-                                } else if keys!($ui: ArrowLeft) {
-                                    // Focus previous element (left)
-                                    self.focus_row_on_next_frame = Some((i, $kind.previous()));
-                                } else if keys!($ui: ArrowRight) {
-                                    // Focus next element (right)
-                                    self.focus_row_on_next_frame = Some((i, $kind.next()));
-                                } else if keys!($ui: Delete) {
-                                    // Delete element
-                                    self.file.contents_mut().rows.remove(i);
-                                    // Focus element above (now offset 0), if none below
-                                    if !row_exists!(0) && row_exists!(-1) {
-                                        self.focus_row_on_next_frame = Some((i - 1, $kind));
+                                // Navigate up/down rows
+                                if $element.has_focus() {
+                                    if keys!($ui: CTRL + ArrowUp) {
+                                        // Focus previous row on next frame, if exists
+                                        if row_exists!(-1) {
+                                            self.focus_row_on_next_frame = Some((i - 1, $kind));
+                                        }
+                                    } else if keys!($ui: CTRL + ArrowDown) {
+                                        // Focus next row on next frame, if exists
+                                        if row_exists!(1) {
+                                            self.focus_row_on_next_frame = Some((i + 1, $kind));
+                                        }
+                                    } else if keys!($ui: CTRL + ArrowLeft) {
+                                        // Focus previous element (left)
+                                        self.focus_row_on_next_frame = Some((i, $kind.previous()));
+                                    } else if keys!($ui: CTRL + ArrowRight) {
+                                        // Focus next element (right)
+                                        self.focus_row_on_next_frame = Some((i, $kind.next()));
+                                    } else if keys!($ui: CTRL + Delete) {
+                                        // Delete element
+                                        self.file.contents_mut().rows.remove(i);
+                                        // Focus element above (now offset 0), if none below
+                                        if !row_exists!(0) && row_exists!(-1) {
+                                            self.focus_row_on_next_frame = Some((i - 1, $kind));
+                                        }
                                     }
                                 }
-                            }
-                        };
-                    }
-
-                    // Editable value
-                    ui.horizontal(|ui|{
-                        let value = &mut this_row!().value;
-
-                        // Number value
-                        let value_element = ui.add(
-                            egui::DragValue::new(value)
-                                .prefix("$")
-                                .max_decimals(2)
-                                .clamp_range(0.0..=INFINITY)
-                                .speed(0.01),
-                        );
-                        handle_focus!(ui: value_element, RowElement::Value);
-
-                        // Mark as unsaved if label or number was changed
-                        if value_element.changed() {
-                            self.file.mark_as_unsaved();
-                        }
-                    });
-
-                    // Editable label
-                    ui.horizontal(|ui|{
-                        let label = &mut this_row!().label;
-
-                        let label_element = ui.text_edit_singleline(label);
-                        handle_focus!(ui: label_element, RowElement::Label);
-
-                        // Mark as unsaved if label or number was changed
-                        if label_element.changed() {
-                            self.file.mark_as_unsaved();
+                            };
                         }
 
-                        ui.separator();
-                    });
+                        // Editable value
+                        ui.horizontal(|ui|{
+                            let value = &mut this_row!().value;
 
-                    // Action buttons
-                    if row_exists!(0) {
-                        ui.horizontal(|ui| {
-                            // New entry after this one
-                            let insert_button = ui.button("+");
-                            handle_focus!(ui: insert_button, RowElement::InsertButton);
-                            if insert_button.clicked() {
-                                self.file.contents_mut().rows.insert(i + 1, CsvRow::default());
-                                self.file.mark_as_unsaved();
-                            }
+                            // Number value
+                            let value_element = ui.add(
+                                egui::DragValue::new(value)
+                                    .prefix("$")
+                                    .max_decimals(2)
+                                    .clamp_range(0.0..=INFINITY)
+                                    .speed(0.01),
+                            );
+                            handle_focus!(ui: value_element, RowElement::Value);
 
-                            // Remove this entry
-                            let remove_button = ui.button("-");
-                            handle_focus!(ui: remove_button, RowElement::RemoveButton);
-                            if remove_button.clicked() {
-                                self.file.contents_mut().rows.remove(i);
+                            // Mark as unsaved if label or number was changed
+                            if value_element.changed() {
                                 self.file.mark_as_unsaved();
                             }
                         });
-                    }
 
-                    // Next row of grid
-                    ui.end_row();
-                }
-            });
+                        // Editable label
+                        ui.horizontal(|ui|{
+                            let label = &mut this_row!().label;
+
+                            let label_element = ui.text_edit_singleline(label);
+                            handle_focus!(ui: label_element, RowElement::Label);
+
+                            // Mark as unsaved if label or number was changed
+                            if label_element.changed() {
+                                self.file.mark_as_unsaved();
+                            }
+
+                            ui.separator();
+                        });
+
+                        // Action buttons
+                        if row_exists!(0) {
+                            ui.horizontal(|ui| {
+                                // New entry after this one
+                                let insert_button = ui.button("+");
+                                handle_focus!(ui: insert_button, RowElement::InsertButton);
+                                if insert_button.clicked() {
+                                    self.file.contents_mut().rows.insert(i + 1, CsvRow::default());
+                                    self.file.mark_as_unsaved();
+                                }
+
+                                // Remove this entry
+                                let remove_button = ui.button("-");
+                                handle_focus!(ui: remove_button, RowElement::RemoveButton);
+                                if remove_button.clicked() {
+                                    self.file.contents_mut().rows.remove(i);
+                                    self.file.mark_as_unsaved();
+                                }
+                            });
+                        }
+
+                        // Next row of grid
+                        ui.end_row();
+                    }
+                });
+            }
+
+            ui.separator();
+
+            // * Bottom of window
+
+            let csv = self.file.contents();
+            let count = csv.count();
+            ui.heading(format!("Total: ${sum} ({count} item{s})", sum = csv.sum(), s = plurals(count)));
         });
 
         // * Render popup windows
@@ -374,4 +386,13 @@ fn dialog_window(title: &str) -> egui::Window {
         .collapsible(false)
         .resizable(false)
         .anchor(Align2::CENTER_CENTER, (0.0, 0.0))
+}
+
+///todo comment
+fn plurals(value: usize) -> &'static str {
+    if value == 1 {
+        ""
+    } else {
+        "s"
+    }
 }
