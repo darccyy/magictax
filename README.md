@@ -1,4 +1,6 @@
-# Forked from 'Egui Encrypted Text Editor'
+# Sumtotal
+
+Forked from 'Egui Encrypted Text Editor'
 
 An [Egui](https://crates.io/crates/egui) app to read and write to encrypted files.
 
