@@ -1,4 +1,4 @@
-use std::{io, thread};
+use std::thread;
 
 use eframe::egui;
 
@@ -11,13 +11,14 @@ impl App {
     /// Set error message
     ///
     /// This function can only be used in main thread
-    fn set_error_message(&mut self, message: &'static str) {
-        *self.error_message.lock().unwrap() = Some(message);
+    fn set_error_message(&mut self, message: impl Into<String>) {
+        *self.error_message.lock().unwrap() = Some(message.into());
     }
 
     /// Get error message from shared state
-    pub fn get_error_message(&self) -> Option<&'static str> {
-        *self.error_message.lock().unwrap()
+    pub fn get_error_message(&self) -> Option<String> {
+        // ? remove clone
+        (*self.error_message.lock().unwrap()).clone()
     }
 
     /// Remove error message
@@ -107,7 +108,7 @@ impl App {
                 // An error occurred
                 // Display a readable error on UI
                 Err(error) => {
-                    *error_message.lock().unwrap() = Some(display_crypto_error(error));
+                    *error_message.lock().unwrap() = Some(error.to_string());
                 }
             }
 
@@ -158,7 +159,7 @@ impl App {
 
                 // An error occurred
                 // Display a readable  error on UI
-                Err(error) => self.set_error_message(display_crypto_error(error)),
+                Err(error) => self.set_error_message(error.to_string()),
             }
         };
     }
@@ -226,37 +227,5 @@ impl App {
     /// Reset close action
     pub(super) fn reset_close_action(&mut self) {
         self.attempting_file_close.reset_attempt();
-    }
-}
-
-/// Print error to stderr and returns nice error message for user
-fn display_crypto_error(error: cocoon::Error) -> &'static str {
-    use cocoon::Error::*;
-
-    eprintln!("Error! {:#?}", error);
-
-    match error {
-        Cryptography => "Invalid password for file. This file is not accessible with this program",
-
-        UnrecognizedFormat => "Unrecognized file type or format",
-
-        TooLarge => {
-            "File too large to decrypt. This most likely means it was not encrypted properly"
-        }
-
-        TooShort => {
-            "File too short to decrypt. This most likely means it was not encrypted properly"
-        }
-
-        Io(error) => match error.kind() {
-            io::ErrorKind::InvalidData => {
-                "Invalid data. This most likely means it was not encrypted properly"
-            }
-
-            io::ErrorKind::PermissionDenied => "Permission denied",
-
-            // ... more IO errors can be handled here
-            _ => "Unknown file error! Please try again",
-        },
     }
 }

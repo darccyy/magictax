@@ -35,19 +35,19 @@ fn parse_should_work() {
 fn parse_should_fail() {
     let result: Result<CsvRow, _> = "".try_into();
     let error = result.expect_err("Should be invalid due to no label");
-    assert_eq!(error, CsvParseError::MissingValue);
+    assert_eq!(error, ParseError::MissingValue);
 
     let result: Result<CsvRow, _> = "no value,".try_into();
     let error = result.expect_err("Should be invalid due to no value");
-    assert_eq!(error, CsvParseError::MissingValue);
+    assert_eq!(error, ParseError::MissingValue);
 
     let result: Result<CsvRow, _> = "value not a number,foo".try_into();
     let error = result.expect_err("Should be invalid due to value not a number");
-    assert_eq!(error, CsvParseError::ValueParseError);
+    assert_eq!(error, ParseError::ValueNotNumber);
 
     let result: Result<CsvRow, _> = "too many cells,123,unexpected cell".try_into();
     let error = result.expect_err("Should be invalid due to too many cells");
-    assert_eq!(error, CsvParseError::TooManyCells);
+    assert_eq!(error, ParseError::TooManyCells);
 }
 
 #[test]

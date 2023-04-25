@@ -1,7 +1,12 @@
+use std::f32::INFINITY;
+
 use eframe::{
-    egui::{self, TextEdit},
+    egui,
     emath::Align2,
 };
+use egui::Grid;
+
+use crate::csv::CsvRow;
 
 use super::{App, CloseFileAction, ConcurrentMessage};
 
@@ -36,6 +41,8 @@ impl eframe::App for App {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Encrypted text editor");
 
+            // * Top bar
+
             // File actions and status
             ui.horizontal(|ui| {
                 /// Create new action, with button and keybind
@@ -66,6 +73,13 @@ impl eframe::App for App {
                         }
                     }};
                 }
+
+                // Add row at bottom
+                if ui.button("+").clicked() {
+                    self.file.contents_mut().rows.push(CsvRow::default());
+                }
+
+                ui.separator();
 
                 // Create actions from macro
                 action_button_and_keybind!( "Save", (CTRL + S), if !self.file.is_registered_and_saved() => {
@@ -102,14 +116,101 @@ impl eframe::App for App {
                 });
             });
 
-            // Editable text of file contents
-            let edit_contents = TextEdit::multiline(self.file.contents_mut()).code_editor();
-            let edit_contents = ui.add_sized( ui.available_size(), edit_contents);
+            // * Rows
 
-            // Set save state to unsaved if text was changed
-            if edit_contents.changed() {
-                self.file.mark_as_unsaved();
-            }
+            Grid::new("rows").num_columns(3).striped(true).show(ui, |ui|{
+                for i in 0..self.file.contents().rows.len() {
+                    /// Returns `true` if index is still in bounds
+                    macro_rules! this_row_still_exists {
+                        () => {
+                            i < self.file.contents().rows.len()
+                        };
+                    }
+
+                    // Break loop if index out of bounds
+                    // Needed due to `.remove()` call inside loop
+                    if !this_row_still_exists!() {
+                        break;
+                    }
+
+                    /// Get mutable reference to this row
+                    /// 
+                    /// Returns from current function if index out of bounds
+                    macro_rules! this_row {
+                        () => {
+                            match self.file.contents_mut().rows.get_mut(i) {
+                                Some(row) => row,
+                                None => return,
+                            }
+                        };
+                    }
+
+                    // Editable value
+                    ui.horizontal(|ui|{
+                        let value = &mut this_row!().value;
+
+                        // Number value
+                        let value_element = ui.add(
+                            egui::DragValue::new(value)
+                                .prefix("$")
+                                .max_decimals(2)
+                                .clamp_range(0.0..=INFINITY)
+                                .speed(0.01),
+                        );
+
+                        // Mark as unsaved if label or number was changed
+                        if value_element.changed() {
+                            self.file.mark_as_unsaved();
+                        }
+                    });
+
+                    // Editable label
+                    ui.horizontal(|ui|{
+                        let label = &mut this_row!().label;
+
+                        let label_element = ui.text_edit_singleline(label);
+
+                        // Mark as unsaved if label or number was changed
+                        if label_element.changed() {
+                            self.file.mark_as_unsaved();
+                        }
+
+                        ui.separator();
+                    });
+
+                    // Action buttons
+                    if this_row_still_exists!() {
+                        ui.horizontal(|ui| {
+                            // New entry after this one
+                            if ui.button("+").clicked() {
+                                self.file.contents_mut().rows.insert(i + 1, CsvRow::default());
+                                self.file.mark_as_unsaved();
+                            }
+
+                            // Remove this entry
+                            if ui.button("-").clicked() {
+                                self.file.contents_mut().rows.remove(i);
+                                self.file.mark_as_unsaved();
+                            }
+                        });
+                    }
+
+                    // Keybinds
+
+                    // Add new row
+                    if keys!(ui: Enter) {
+                        if this_row_still_exists!() {
+                            self.file.contents_mut().rows.insert(i + 1, CsvRow::default());
+                        } else {
+                            self.file.contents_mut().rows.push(CsvRow::default());
+                        }
+                        self.file.mark_as_unsaved();
+                    }
+
+                    // Next row of grid
+                    ui.end_row();
+                }
+            });
         });
 
         // * Render popup windows

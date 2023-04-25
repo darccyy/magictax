@@ -15,7 +15,7 @@ fn check_save_state() {
     // Unregistered, Empty
     let file = File {
         path: None,
-        contents: String::new(),
+        contents: Csv::default(),
         saved: false,
     };
     assert_eq!(file.is_registered_and_saved(), false);
@@ -23,7 +23,7 @@ fn check_save_state() {
     // Same, but saved (should not matter)
     let file = File {
         path: None,
-        contents: String::new(),
+        contents: Csv::default(),
         saved: true,
     };
     assert_eq!(file.is_registered_and_saved(), false);
@@ -32,7 +32,7 @@ fn check_save_state() {
     // Unregistered, NON-Empty
     let file = File {
         path: None,
-        contents: String::from("Some contents"),
+        contents: Csv::decode("foo,123\nbar,456").expect("Should not fail"),
         saved: false,
     };
     assert_eq!(file.is_registered_and_saved(), false);
@@ -40,7 +40,7 @@ fn check_save_state() {
     // Same, but saved (should not matter)
     let file = File {
         path: None,
-        contents: String::from("Some contents"),
+        contents: Csv::decode("foo,123\nbar,456").expect("Should not fail"),
         saved: true,
     };
     assert_eq!(file.is_registered_and_saved(), false);
@@ -54,7 +54,7 @@ fn check_save_state() {
     // Registered, unsaved
     let file = File {
         path: Some(String::from("some/path")),
-        contents: String::new(),
+        contents: Csv::default(),
         saved: false,
     };
     assert_eq!(file.is_registered_and_saved(), false);
@@ -62,7 +62,7 @@ fn check_save_state() {
     // Same, but non-empty (should not matter)
     let file = File {
         path: Some(String::from("some/path")),
-        contents: String::from("Some contents"),
+        contents: Csv::decode("foo,123\nbar,456").expect("Should not fail"),
         saved: false,
     };
     assert_eq!(file.is_registered_and_saved(), false);
@@ -71,7 +71,7 @@ fn check_save_state() {
     // Registered, saved
     let file = File {
         path: Some(String::from("some/path")),
-        contents: String::new(),
+        contents: Csv::default(),
         saved: true,
     };
     assert_eq!(file.is_registered_and_saved(), true);
@@ -79,7 +79,7 @@ fn check_save_state() {
     // Same, but non-empty (should not matter)
     let file = File {
         path: Some(String::from("some/path")),
-        contents: String::from("Some contents"),
+        contents: Csv::decode("foo,123\nbar,456").expect("Should not fail"),
         saved: true,
     };
     assert_eq!(file.is_registered_and_saved(), true);
