@@ -9,6 +9,7 @@ use crate::csv::{self, Csv};
 
 type FileResult<T> = Result<T, FileError>;
 
+//todo comments
 #[derive(Debug)]
 pub enum FileError {
     Crypto(cocoon::Error),

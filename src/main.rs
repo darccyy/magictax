@@ -2,16 +2,19 @@
 
 use eframe::egui;
 
-use sumtotal::App;
+use sumtotal::{App, GLOBAL_WINDOW_SCALE};
 
 // Start egui/eframe app
 fn main() -> Result<(), eframe::Error> {
     tracing_subscriber::fmt::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
 
     let options = eframe::NativeOptions {
-        min_window_size: Some(egui::vec2(600.0, 400.0)),
-        initial_window_size: Some(egui::vec2(1000.0, 600.0)),
-        initial_window_pos: Some(egui::pos2(200.0, 100.0)),
+        min_window_size: Some(egui::vec2(600.0, 400.0) * GLOBAL_WINDOW_SCALE),
+        initial_window_size: Some(egui::vec2(1000.0, 600.0) * GLOBAL_WINDOW_SCALE),
+        initial_window_pos: Some(egui::pos2(
+            200.0 * GLOBAL_WINDOW_SCALE,
+            100.0 * GLOBAL_WINDOW_SCALE,
+        )),
         ..Default::default()
     };
 

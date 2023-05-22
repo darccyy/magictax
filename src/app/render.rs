@@ -6,14 +6,14 @@ use eframe::{
 };
 use egui::Grid;
 
-use crate::{csv::CsvRow, app::RowElement};
+use crate::{csv::CsvRow, app::RowElement, GLOBAL_WINDOW_SCALE};
 
 use super::{App, CloseFileAction, ConcurrentMessage};
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        // Set scale to slightly more zoomed in
-        ctx.set_pixels_per_point(2.3);
+        // Fix scale
+        ctx.set_pixels_per_point(1.8 * GLOBAL_WINDOW_SCALE);
 
         // Close window, if action was triggered in a previous frame
         //      (from a method that did not have `frame`)

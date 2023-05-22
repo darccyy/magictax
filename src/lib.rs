@@ -22,6 +22,11 @@ use crate::{attempt::Attempt, channel::Channel, file::File};
 /// This is not very secure, but at least the file cannot be opened by any program
 const KEY: &str = "super-secure-encryption-key";
 
+/// Set window scale
+/// 
+/// Affects window zoom, position, and size
+pub const GLOBAL_WINDOW_SCALE: f32 = 0.6;
+
 /// Get default directory to open file open/save dialogs in
 fn get_start_dir() -> Option<PathBuf> {
     if let Some(dir) = dirs_next::document_dir() {
