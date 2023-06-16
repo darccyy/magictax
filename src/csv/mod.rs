@@ -3,6 +3,9 @@ mod tests;
 
 use std::{error::Error, fmt::Display};
 
+use serde::ser::{Serialize, SerializeStruct};
+use serde::Serialize as SerializeDerive;
+
 /// Error parsing data from CSV file
 #[derive(Debug, PartialEq)]
 pub enum ParseError {
@@ -29,7 +32,7 @@ impl Error for ParseError {}
 /// Data parsed from CSV file
 ///
 ///todo: Rename
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, SerializeDerive)]
 pub struct Csv {
     pub rows: Vec<CsvRow>,
 }
@@ -91,6 +94,26 @@ pub struct CsvRow {
     pub label: String,
     /// Number value of entry
     pub value: f32,
+}
+
+// Manual implementation of serialize
+impl Serialize for CsvRow {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut state = serializer.serialize_struct("CsvRow", 2)?;
+        // This must be passed as a string, to not mess up float decimals in json conversion
+        state.serialize_field("value", &round_to_string(self.value))?;
+        state.serialize_field("label", &self.label)?;
+        state.end()
+    }
+}
+
+/// Round a float to 2 decimal places and convert to string
+fn round_to_string(number: f32) -> String {
+    let rounded = (number * 100.0).round() / 100.0;
+    rounded.to_string()
 }
 
 impl Default for CsvRow {

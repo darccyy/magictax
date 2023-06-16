@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      {{style}}
+    </style>
+  </head>
+  <body>
+    
+    <h1> Information </h1>
+    
+    <table>
+
+      <tr>
+        <th> Value </th>
+        <th> Label </th>
+      </tr>
+
+      {{#each table.rows}}
+      <tr>
+        <td> {{this.value}} </td>
+        <td> {{this.label}} </td>
+      </tr>
+      {{/each}}
+
+    </table>
+  </body>
+</html>
+

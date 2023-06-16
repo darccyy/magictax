@@ -36,9 +36,9 @@ pub struct App {
     close_window_on_next_frame: bool,
 
     /// Row to focus on next frame
-    /// 
+    ///
     /// Index of row, and kind of element in row
-    /// 
+    ///
     /// `None` if no row needs to gain focus
     focus_row_on_next_frame: Option<(usize, RowElement)>,
 
@@ -61,11 +61,10 @@ enum RowElement {
 }
 
 impl RowElement {
-    
     pub fn previous(&self) -> Self {
         use RowElement::*;
 
-        match self{
+        match self {
             Value => Value,
             Label => Value,
             InsertButton => Label,
@@ -76,7 +75,7 @@ impl RowElement {
     pub fn next(&self) -> Self {
         use RowElement::*;
 
-        match self{
+        match self {
             Value => Label,
             Label => InsertButton,
             InsertButton => RemoveButton,

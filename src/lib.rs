@@ -10,6 +10,8 @@ mod channel;
 /// Handle file input/output and save state
 mod file;
 
+mod export;
+
 mod csv;
 
 use std::path::PathBuf;
@@ -23,7 +25,7 @@ use crate::{attempt::Attempt, channel::Channel, file::File};
 const KEY: &str = "super-secure-encryption-key";
 
 /// Set window scale
-/// 
+///
 /// Affects window zoom, position, and size
 pub const GLOBAL_WINDOW_SCALE: f32 = 0.6;
 

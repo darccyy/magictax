@@ -111,6 +111,9 @@ impl eframe::App for App {
                 action_button_and_keybind!( "New", (CTRL + N), if !self.file.is_unregistered_and_unchanged() => {
                     self.file_new();
                 });
+                action_button_and_keybind!( "Print", (CTRL + P), if true => {
+                    self.file_export_html();
+                });
                 
                 // Show filepath if file is registered
                 if let Some(path) = self.file.path() {

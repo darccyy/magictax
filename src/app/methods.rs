@@ -1,9 +1,9 @@
-use std::thread;
+use std::{fs, thread};
 
 use eframe::egui;
 
 use super::{App, CloseFileAction, ConcurrentMessage};
-use crate::{file_dialog, File, KEY};
+use crate::{export::export_html, file_dialog, File, KEY};
 
 impl App {
     // * Error messages
@@ -184,6 +184,27 @@ impl App {
         println!("New file");
 
         self.file = File::default();
+    }
+
+    /// Export data to html
+    ///
+    /// Shows *save file* dialog
+    pub(super) fn file_export_html(&mut self) {
+        println!("Print html");
+
+        if let Some(path) = file_dialog()
+            .set_file_name("print.html")
+            .save_file()
+            .map(|path_buf| path_buf.display().to_string())
+        {
+            println!("{}", path);
+
+            println!("{:#?}", self.file.contents());
+
+            let html = export_html(self.file.contents()).expect("Failed to export html file");
+
+            fs::write(path, html).expect("Failed to write file");
+        };
     }
 
     // * Handle file close
