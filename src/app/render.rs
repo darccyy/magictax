@@ -6,7 +6,7 @@ use eframe::{
 };
 use egui::Grid;
 
-use crate::{csv::CsvRow, app::RowElement, GLOBAL_WINDOW_SCALE};
+use crate::{csv::CsvRow, app::RowElement, GLOBAL_WINDOW_SCALE, print_info};
 
 use super::{App, CloseFileAction, ConcurrentMessage};
 
@@ -40,7 +40,7 @@ impl eframe::App for App {
         if let Ok(msg) = self.channel.receiver.try_recv() {
             match msg {
                 ConcurrentMessage::FinishConcurrentSave => {
-                    println!("Save finished!");
+                    print_info!("Save finished!");
                     self.file.force_set_saved();
 
                     if self.attempting_file_close.is_attempting() {

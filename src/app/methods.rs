@@ -3,7 +3,7 @@ use std::{fs, thread};
 use eframe::egui;
 
 use super::{App, CloseFileAction, ConcurrentMessage};
-use crate::{export::export_html, file_dialog, File, KEY};
+use crate::{export::export_html, file_dialog, print_info, File, KEY};
 
 impl App {
     // * Error messages
@@ -32,7 +32,7 @@ impl App {
 
     /// Save existing file, or save as if not registered
     pub(super) fn file_save_or_save_as(&mut self, ctx: &egui::Context) {
-        println!("Save or save as");
+        print_info!("Save or save as");
 
         // Clone path, not whole file object
         let path_option = self.file.path().cloned();
@@ -51,9 +51,10 @@ impl App {
     ///
     /// Shows *save file* dialog
     pub(super) fn file_save_as(&mut self, ctx: &egui::Context) {
-        println!("Save as");
+        print_info!("Save as");
 
         if let Some(path) = file_dialog()
+            .set_file_name("info.enc")
             .save_file()
             .map(|path_buf| path_buf.display().to_string())
         {
@@ -67,7 +68,7 @@ impl App {
     ///
     /// Should not be ran, unless file is already registered
     fn file_save_existing(&mut self, path: &str, ctx: &egui::Context) {
-        println!("Save existing");
+        print_info!("Save existing");
 
         // Set as writing
         *self.writing.lock().unwrap() = true;
@@ -130,7 +131,7 @@ impl App {
     ///
     /// Shows *open file* dialog
     pub(super) fn file_open(&mut self) {
-        println!("Open");
+        print_info!("Open");
 
         if !self.file_can_close() {
             self.attempting_file_close
@@ -140,6 +141,7 @@ impl App {
         }
 
         if let Some(path) = file_dialog()
+            .set_file_name("info.enc")
             .pick_file()
             .map(|path_buf| path_buf.display().to_string())
         {
@@ -172,7 +174,7 @@ impl App {
     ///
     /// Sets current file to empty and unregistered (default)
     pub(super) fn file_new(&mut self) {
-        println!("? New file");
+        print_info!("? New file");
 
         if !self.file_can_close() {
             self.attempting_file_close
@@ -190,20 +192,26 @@ impl App {
     ///
     /// Shows *save file* dialog
     pub(super) fn file_export_html(&mut self) {
-        println!("Print html");
+        print_info!("Export as html");
 
         if let Some(path) = file_dialog()
             .set_file_name("print.html")
             .save_file()
             .map(|path_buf| path_buf.display().to_string())
         {
-            println!("{}", path);
+            // println!("{}", path);
+            // println!("{:#?}", self.file.contents());
 
-            println!("{:#?}", self.file.contents());
+            // Try to convert to html
+            let Ok(html) = export_html(self.file.contents()) else {
+                self.set_error_message("Failed to convert data to html");
+                return;
+            };
 
-            let html = export_html(self.file.contents()).expect("Failed to export html file");
-
-            fs::write(path, html).expect("Failed to write file");
+            // Write to file or show error
+            if let Err(error) = fs::write(path, html) {
+                self.set_error_message(error.to_string());
+            }
         };
     }
 

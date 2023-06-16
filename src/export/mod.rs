@@ -3,7 +3,7 @@ use serde_json::json;
 
 use crate::csv::Csv;
 
-pub fn export_html(csv: &Csv) -> Result<String, ()> {
+pub fn export_html(csv: &Csv) -> Result<String, handlebars::RenderError> {
     // Get templates from files
     let template = include_str!("template/index.hbs");
     let style = include_str!("template/style.css");
@@ -14,16 +14,12 @@ pub fn export_html(csv: &Csv) -> Result<String, ()> {
         "style": style,
     });
 
-    println!("{:#?}", json);
-
     // Create handlebars interface
     let mut hbs = Handlebars::new();
     hbs.set_strict_mode(true);
 
     // Render template with handlebars
-    let html = hbs
-        .render_template(&template, &json)
-        .expect("Failed to render template");
+    let html = hbs.render_template(&template, &json)?;
 
     // Minify html
     Ok(minify(html))

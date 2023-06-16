@@ -19,6 +19,14 @@ use std::path::PathBuf;
 pub use crate::app::App;
 use crate::{attempt::Attempt, channel::Channel, file::File};
 
+#[macro_export]
+macro_rules! print_info {
+    ( $($tt:tt)* ) => {
+        print!("[info] ");
+        println!( $($tt)* );
+    }
+}
+
 /// Cryption key which every file uses
 ///
 /// This is not very secure, but at least the file cannot be opened by any program
