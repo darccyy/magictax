@@ -1,7 +1,7 @@
 use handlebars::Handlebars;
 use serde_json::json;
 
-use crate::csv::Csv;
+use crate::{csv::Csv, round_to_string};
 
 pub fn export_html(csv: &Csv) -> Result<String, handlebars::RenderError> {
     // Get templates from files
@@ -10,8 +10,9 @@ pub fn export_html(csv: &Csv) -> Result<String, handlebars::RenderError> {
 
     // Create json object to pass to template
     let json = json!({
-        "table": csv,
         "style": style,
+        "table": csv,
+        "total": round_to_string(csv.sum()),
     });
 
     // Create handlebars interface

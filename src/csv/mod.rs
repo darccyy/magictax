@@ -6,6 +6,8 @@ use std::{error::Error, fmt::Display};
 use serde::ser::{Serialize, SerializeStruct};
 use serde::Serialize as SerializeDerive;
 
+use crate::round_to_string;
+
 /// Error parsing data from CSV file
 #[derive(Debug, PartialEq)]
 pub enum ParseError {
@@ -108,12 +110,6 @@ impl Serialize for CsvRow {
         state.serialize_field("label", &self.label)?;
         state.end()
     }
-}
-
-/// Round a float to 2 decimal places and convert to string
-fn round_to_string(number: f32) -> String {
-    let rounded = (number * 100.0).round() / 100.0;
-    rounded.to_string()
 }
 
 impl Default for CsvRow {

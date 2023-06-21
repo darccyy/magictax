@@ -7,23 +7,26 @@
   </head>
   <body>
     
-    <h1> Information </h1>
+    <h1> Report </h1>
     
     <table>
 
       <tr>
-        <th> Value </th>
-        <th> Label </th>
+        <th> Amount </th>
+        <th> Description </th>
       </tr>
 
       {{#each table.rows}}
       <tr>
-        <td> {{this.value}} </td>
+        <td> ${{this.value}} </td>
         <td> {{this.label}} </td>
       </tr>
       {{/each}}
 
     </table>
+
+    <h2> Total: ${{total}} </h2>
+    
   </body>
 </html>
 

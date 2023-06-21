@@ -61,3 +61,9 @@ fn file_dialog() -> rfd::FileDialog {
         dialog
     }
 }
+
+/// Round a float to 2 decimal places and convert to string
+fn round_to_string(number: f32) -> String {
+    let rounded = (number * 100.0).round() / 100.0;
+    rounded.to_string()
+}
