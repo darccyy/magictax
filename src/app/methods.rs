@@ -3,7 +3,7 @@ use std::{fs, thread};
 use eframe::egui;
 
 use super::{App, CloseFileAction, ConcurrentMessage};
-use crate::{export::export_html, file_dialog, print_info, File, KEY};
+use crate::{export::export_html, file_dialog, file_dialog_no_filter, print_info, File, KEY};
 
 impl App {
     // * Error messages
@@ -194,8 +194,9 @@ impl App {
     pub(super) fn file_export_html(&mut self) {
         print_info!("Export as html");
 
-        if let Some(path) = file_dialog()
+        if let Some(path) = file_dialog_no_filter()
             .set_file_name("print.html")
+            .add_filter("HTML File", &["html"])
             .save_file()
             .map(|path_buf| path_buf.display().to_string())
         {

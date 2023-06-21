@@ -53,8 +53,14 @@ fn get_start_dir() -> Option<PathBuf> {
 
 /// Create simple file open/save dialog with `rfd`
 fn file_dialog() -> rfd::FileDialog {
-    let dialog = rfd::FileDialog::new().add_filter("Encrypted file", &["enc"]);
+    file_dialog_no_filter().add_filter("Encrypted file", &["enc"])
+}
 
+/// Create simple file open/save dialog with `rfd`
+///
+/// Does not add a file filter
+fn file_dialog_no_filter() -> rfd::FileDialog {
+    let dialog = rfd::FileDialog::new();
     if let Some(dir) = get_start_dir() {
         dialog.set_directory(dir)
     } else {

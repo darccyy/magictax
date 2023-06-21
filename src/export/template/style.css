@@ -3,22 +3,28 @@ table {
   border-collapse: collapse;
   font-family: Arial, sans-serif;
 }
+
 thead {
   background-color: #f2f2f2;
 }
+
 th {
   padding: 10px;
   text-align: left;
 }
+
 tr:nth-child(even) {
   background-color: #f9f9f9;
 }
+
 tr:hover {
   background-color: #e6e6e6;
 }
+
 td {
   padding: 10px;
 }
+
 td, th {
   border: 1px solid #ddd;
 }
