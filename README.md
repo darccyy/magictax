@@ -2,7 +2,20 @@
 
 Tax calculator.
 
-Forked from 'Egui Encrypted Text Editor'
+Forked from [Egui Encrypted Text Editor](https://github.com/darccyy/egui-encrypted-text-editor)
 
 IMPORTANT: The key used for encryption/decryption is *the same key everytime*! Currently there is no way to change the key.
+
+# Install
+
+From source
+
+```bash
+git clone https://github.com/darccyy/magictax.git
+cd magictax
+
+cargo install --path .
+```
+
+![Logo Icon: MagicTax](./icon.png)
 
