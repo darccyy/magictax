@@ -7,14 +7,14 @@ mod app;
 mod attempt;
 /// Wrapper for `Sender` and `Receiver` types in `std::sync::mpsc`
 mod channel;
+/// Handle CSV format for unencrypted files
+mod csv;
+/// Export (print) file information to html
+mod export;
 /// Handle file input/output and save state
 mod file;
-
-mod export;
-
-mod csv;
-
-use std::path::PathBuf;
+/// Create simple file open/save dialog with `rfd`
+mod file_dialog;
 
 pub use crate::app::App;
 use crate::{attempt::Attempt, channel::Channel, file::File};
@@ -36,37 +36,6 @@ const KEY: &str = "super-secure-encryption-key";
 ///
 /// Affects window zoom, position, and size
 pub const GLOBAL_WINDOW_SCALE: f32 = 0.6;
-
-/// Get default directory to open file open/save dialogs in
-fn get_start_dir() -> Option<PathBuf> {
-    if let Some(dir) = dirs_next::document_dir() {
-        return Some(dir);
-    }
-    if let Some(dir) = dirs_next::desktop_dir() {
-        return Some(dir);
-    }
-    if let Some(dir) = dirs_next::home_dir() {
-        return Some(dir);
-    }
-    None
-}
-
-/// Create simple file open/save dialog with `rfd`
-fn file_dialog() -> rfd::FileDialog {
-    file_dialog_no_filter().add_filter("Encrypted file", &["enc"])
-}
-
-/// Create simple file open/save dialog with `rfd`
-///
-/// Does not add a file filter
-fn file_dialog_no_filter() -> rfd::FileDialog {
-    let dialog = rfd::FileDialog::new();
-    if let Some(dir) = get_start_dir() {
-        dialog.set_directory(dir)
-    } else {
-        dialog
-    }
-}
 
 /// Round a float to 2 decimal places and convert to string
 fn round_to_string(number: f32) -> String {

@@ -2,7 +2,7 @@
 
 use eframe::egui;
 
-use sumtotal::{App, GLOBAL_WINDOW_SCALE};
+use magictax::{App, GLOBAL_WINDOW_SCALE};
 
 // Start egui/eframe app
 fn main() -> Result<(), eframe::Error> {
@@ -18,9 +18,5 @@ fn main() -> Result<(), eframe::Error> {
         ..Default::default()
     };
 
-    eframe::run_native(
-        "Encrypted CSV Editor",
-        options,
-        Box::new(|_cc| Box::<App>::default()),
-    )
+    eframe::run_native("MagicTax", options, Box::new(|_cc| Box::<App>::default()))
 }

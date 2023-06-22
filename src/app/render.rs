@@ -56,7 +56,7 @@ impl eframe::App for App {
         let concurrently_writing = *self.writing.lock().unwrap();
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Encrypted CSV editor");
+            ui.heading("MagicTax");
 
             // * Top bar
 
