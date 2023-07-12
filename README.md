@@ -8,7 +8,7 @@ IMPORTANT: The key used for encryption/decryption is *the same key everytime*! C
 
 # Install
 
-From source
+From source (requires `cargo`)
 
 ```bash
 git clone https://github.com/darccyy/magictax.git
