@@ -5,7 +5,7 @@ name := `basename "$(pwd)"`
 run:
   cargo run
 
-# Install program
+# Install program to system
 install:
   cargo install --path .
 
