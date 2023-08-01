@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>MagicTax Report</title>
+    <title> MagicTax Report {{date}} </title>
     
     <style>
       {{style}}
@@ -10,24 +10,40 @@
   <body>
     
     <h1> MagicTax Report </h1>
+
+    <h2> {{date}} </h2>
     
     <table>
 
       <tr>
-        <th> Amount </th>
-        <th> Description </th>
+        <th> Item Name </th>
+        <th> Income </th>
+        <th> Expense </th>
       </tr>
 
-      {{#each table.rows}}
+      {{#each table}}
       <tr>
-        <td> ${{this.value}} </td>
-        <td> {{this.label}} </td>
+        <td> {{this.name}} </td>
+        <td>
+            {{#if this.income}}
+            ${{this.income}}
+            {{else}}
+            <span class="empty"></span>
+            {{/if}}
+        </td>
+        <td>
+            {{#if this.expense}}
+            ${{this.expense}}
+            {{else}}
+            <span class="empty"></span>
+            {{/if}}
+        </td>
       </tr>
       {{/each}}
 
     </table>
 
-    <h2> Total: ${{total}} </h2>
+    <h2> Total Income: ${{total}} </h2>
     
   </body>
 </html>

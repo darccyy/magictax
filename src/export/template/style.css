@@ -1,5 +1,5 @@
 table {
-  width: 100%;
+  /* width: 100%; */
   border-collapse: collapse;
   font-family: Arial, sans-serif;
 }
@@ -27,5 +27,10 @@ td {
 
 td, th {
   border: 1px solid #ddd;
+}
+
+.empty::before {
+    content: "⸻";
+    opacity: 0.2;
 }
 

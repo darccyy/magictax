@@ -12,7 +12,9 @@ impl App {
     ///
     /// This function can only be used in main thread
     fn set_error_message(&mut self, message: impl Into<String>) {
-        *self.error_message.lock().unwrap() = Some(message.into());
+        let message = message.into();
+        eprintln!("[ERROR] {}", message);
+        *self.error_message.lock().unwrap() = Some(message);
     }
 
     /// Get error message from shared state
@@ -200,9 +202,13 @@ impl App {
             // println!("{:#?}", self.file.contents());
 
             // Try to convert to html
-            let Ok(html) = export_html(self.file.contents()) else {
-                self.set_error_message("Failed to convert data to html");
-                return;
+            let html = match export_html(self.file.contents()) {
+                Ok(html) => html,
+                Err(error) => {
+                    eprintln!("{:?}", error);
+                    self.set_error_message("Failed to convert data to html");
+                    return;
+                }
             };
 
             // Write to file or show error

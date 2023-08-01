@@ -13,3 +13,4 @@ handlebars = "4.3.7"
 serde_json = "1.0.96"
 serde = { version = "1.0.164", features = ["derive"] }
 minify-html = "0.11.1"
+chrono = "0.4.26"

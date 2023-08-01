@@ -238,7 +238,7 @@ impl eframe::App for App {
                                 egui::DragValue::new(value)
                                     .prefix("$")
                                     .max_decimals(2)
-                                    .clamp_range(0.0..=INFINITY)
+                                    .clamp_range(-INFINITY..=INFINITY)
                                     .speed(0.01),
                             );
                             handle_focus!(ui: value_element, RowElement::Value);

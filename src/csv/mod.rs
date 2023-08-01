@@ -3,11 +3,6 @@ mod tests;
 
 use std::{error::Error, fmt::Display};
 
-use serde::ser::{Serialize, SerializeStruct};
-use serde::Serialize as SerializeDerive;
-
-use crate::round_to_string;
-
 /// Error parsing data from CSV file
 #[derive(Debug, PartialEq)]
 pub enum ParseError {
@@ -34,7 +29,7 @@ impl Error for ParseError {}
 /// Data parsed from CSV file
 ///
 ///todo: Rename
-#[derive(Debug, Default, Clone, PartialEq, SerializeDerive)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct Csv {
     pub rows: Vec<CsvRow>,
 }
@@ -99,18 +94,18 @@ pub struct CsvRow {
 }
 
 // Manual implementation of serialize
-impl Serialize for CsvRow {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut state = serializer.serialize_struct("CsvRow", 2)?;
-        // This must be passed as a string, to not mess up float decimals in json conversion
-        state.serialize_field("value", &round_to_string(self.value))?;
-        state.serialize_field("label", &self.label)?;
-        state.end()
-    }
-}
+// impl Serialize for CsvRow {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: serde::Serializer,
+//     {
+//         let mut state = serializer.serialize_struct("CsvRow", 2)?;
+//         // This must be passed as a string, to not mess up float decimals in json conversion
+//         state.serialize_field("value", &round_to_string(self.value))?;
+//         state.serialize_field("label", &self.label)?;
+//         state.end()
+//     }
+// }
 
 impl Default for CsvRow {
     fn default() -> Self {
