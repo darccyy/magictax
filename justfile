@@ -22,3 +22,11 @@ build-all:
   just install &&\
   just cross
 
+# Run unit tests, NOT manual integration tests
+test:
+  cargo test 
+
+# Run manual integration tests, NOT unit tests
+test-manual:
+  cargo test --test '*' -- --nocapture --ignored
+

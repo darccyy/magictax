@@ -16,7 +16,10 @@ mod file;
 /// Create simple file open/save dialog with `rfd`
 mod file_dialog;
 
-pub use crate::app::App;
+pub use crate::{
+    app::App,
+    csv::{Csv, CsvRow},
+};
 use crate::{attempt::Attempt, channel::Channel, file::File};
 
 #[macro_export]

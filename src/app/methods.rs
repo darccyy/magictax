@@ -33,7 +33,7 @@ impl App {
     // * Save file (save, save as)
 
     /// Save existing file, or save as if not registered
-    pub(super) fn file_save_or_save_as(&mut self, ctx: &egui::Context) {
+    pub fn file_save_or_save_as(&mut self, ctx: &egui::Context) {
         print_info!("Save or save as");
 
         // Clone path, not whole file object
@@ -52,7 +52,7 @@ impl App {
     /// Save file as
     ///
     /// Shows *save file* dialog
-    pub(super) fn file_save_as(&mut self, ctx: &egui::Context) {
+    pub fn file_save_as(&mut self, ctx: &egui::Context) {
         print_info!("Save as");
 
         if let Some(path) = file_dialog::mgx()
@@ -68,7 +68,7 @@ impl App {
     /// Save existing file in new thread (concurrent / synchronous)
     ///
     /// Should not be ran, unless file is already registered
-    fn file_save_existing(&mut self, path: &str, ctx: &egui::Context) {
+    pub fn file_save_existing(&mut self, path: &str, ctx: &egui::Context) {
         print_info!("Save existing");
 
         // Set as writing
@@ -131,7 +131,7 @@ impl App {
     /// Attempts to close current file (See `self.attempt_file_close`)
     ///
     /// Shows *open file* dialog
-    pub(super) fn file_open(&mut self) {
+    pub fn file_open(&mut self) {
         print_info!("Open");
 
         if !self.file_can_close() {
@@ -173,7 +173,7 @@ impl App {
     /// Attempts to close current file (See `self.attempt_file_close`)
     ///
     /// Sets current file to empty and unregistered (default)
-    pub(super) fn file_new(&mut self) {
+    pub fn file_new(&mut self) {
         print_info!("? New file");
 
         if !self.file_can_close() {
@@ -191,7 +191,7 @@ impl App {
     /// Export data to html
     ///
     /// Shows *save file* dialog
-    pub(super) fn file_export_html(&mut self) {
+    pub fn file_export_html(&mut self) {
         print_info!("Export as html");
 
         if let Some(path) = file_dialog::html()
@@ -221,13 +221,13 @@ impl App {
     // * Handle file close
 
     /// Returns `true` if file is not changed, or condition is overridden
-    pub(super) fn file_can_close(&self) -> bool {
+    pub fn file_can_close(&self) -> bool {
         self.attempting_file_close
             .check_condition(!self.file.is_changed())
     }
 
     /// Run close action if allowed
-    pub(super) fn call_close_action(&mut self) {
+    pub fn call_close_action(&mut self) {
         // Cancel if file is not allowed to close (unsaved file)
         if !self.file_can_close() {
             return;
@@ -258,7 +258,7 @@ impl App {
     }
 
     /// Reset close action
-    pub(super) fn reset_close_action(&mut self) {
+    pub fn reset_close_action(&mut self) {
         self.attempting_file_close.reset_attempt();
     }
 }

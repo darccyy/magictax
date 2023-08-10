@@ -24,7 +24,7 @@ enum CloseFileAction {
 #[derive(Default)]
 pub struct App {
     /// Current file opened
-    file: File,
+    pub file: File,
 
     /// Whether file is currently writing
     writing: Arc<Mutex<bool>>,
