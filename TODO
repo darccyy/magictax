@@ -1,0 +1,11 @@
+FEATURES
+    add tags
+        sort into section, by tag
+        create summary table
+    move entries up/down
+        buttons
+        keybinds
+
+BUGS
+    enter key after inserting value fills value in next entry
+
