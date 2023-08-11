@@ -17,6 +17,14 @@ fn json_convert_works() {
                 label: "zero example".to_owned(),
                 value: 0.0,
             },
+            CsvRow {
+                label: "".to_owned(), // no label, without value
+                value: 0.0,
+            },
+            CsvRow {
+                label: "".to_owned(), // no label, with value
+                value: 50.0,
+            },
         ],
     };
 
@@ -27,7 +35,7 @@ fn json_convert_works() {
             0 => assert_eq!(
                 row,
                 ReportRow {
-                    name: "income example".to_owned(),
+                    name: Some("income example".to_owned()),
                     income: Some("100".to_owned()),
                     expense: None,
                 }
@@ -35,7 +43,7 @@ fn json_convert_works() {
             1 => assert_eq!(
                 row,
                 ReportRow {
-                    name: "expense example".to_owned(),
+                    name: Some("expense example".to_owned()),
                     income: None,
                     expense: Some("100".to_owned()),
                 }
@@ -43,8 +51,16 @@ fn json_convert_works() {
             2 => assert_eq!(
                 row,
                 ReportRow {
-                    name: "zero example".to_owned(),
+                    name: Some("zero example".to_owned()),
                     income: None,
+                    expense: None,
+                }
+            ),
+            3 => assert_eq!(
+                row,
+                ReportRow {
+                    name: None,
+                    income: Some("50".to_owned()),
                     expense: None,
                 }
             ),

@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod tests;
 
+use chrono::Local;
 use handlebars::Handlebars;
 use serde::Serialize;
 use serde_json::json;
-use chrono::Local;
 
 use crate::{csv::Csv, round_to_string};
 
@@ -34,7 +34,7 @@ pub fn export_html(csv: &Csv) -> Result<String, handlebars::RenderError> {
 
 /// Get today's date as a string
 fn get_today_date() -> String {
-     let today = Local::now();
+    let today = Local::now();
     let date_string = today.format("%Y-%m-%d").to_string();
     date_string
 }
@@ -42,7 +42,7 @@ fn get_today_date() -> String {
 /// Object passed into template, all values stringified
 #[derive(Debug, PartialEq, Serialize)]
 struct ReportRow {
-    name: String,
+    name: Option<String>,
     income: Option<String>,
     expense: Option<String>,
 }
@@ -52,7 +52,16 @@ fn csv_report(csv: &Csv) -> Vec<ReportRow> {
     let mut report = Vec::new();
 
     for row in &csv.rows {
+        let label = row.label.to_owned();
         let value = row.value;
+
+        let name = if !label.trim().is_empty() {
+            Some(label)
+        } else if value != 0.0 {
+            None
+        } else {
+            continue;
+        };
 
         // Set income or expense, depending on sign of number value
         let (income, expense) = if value > 0.0 {
@@ -64,7 +73,7 @@ fn csv_report(csv: &Csv) -> Vec<ReportRow> {
         };
 
         report.push(ReportRow {
-            name: row.label.to_owned(),
+            name,
             income,
             expense,
         })

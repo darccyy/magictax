@@ -52,7 +52,10 @@ fn app_io_works() {
     );
     assert!(rows.next().is_none());
 
-    println!(":) content matches");
+    pause("export (print) the file to html");
+    app.file_export_html();
+
+    println!("All good!");
 }
 
 /// Print title for section in test

@@ -23,7 +23,13 @@
 
       {{#each table}}
       <tr>
-        <td> {{this.name}} </td>
+        <td>
+            {{#if this.name}}
+            {{this.name}}
+            {{else}}
+            <span class="empty"></span>
+            {{/if}}
+        </td>
         <td>
             {{#if this.income}}
             ${{this.income}}
