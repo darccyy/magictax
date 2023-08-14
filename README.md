@@ -17,5 +17,7 @@ cd magictax
 cargo install --path .
 ```
 
+See `justfile` for commands.
+
 ![Logo Icon: MagicTax](./icon.png)
 
